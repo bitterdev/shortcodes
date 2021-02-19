@@ -1,0 +1,44 @@
+0.9.8
+- Get rid of 'shortcodes.enable_php_snippets' setting.
+- Only let the Super User add or edit PHP snippets.
+
+0.9.7
+- Get rid of 'Core' namespace to prevent confusion.
+- Remove unused imports.
+- Add delete usage queries in try/catch to prevent possible errors when deleting a page.
+- Make sure that PHP snippets that contain an error are logged.
+- Disable PHP snippets by default.
+- Allow PHP snippets if configuration setting is enabled (manually).
+
+0.9.6
+- Hide usage column if setting is disabled.
+- Autofocus on shortcode field in add / edit form.
+- Make usage column only clickable if there is usage for a shortcode.
+
+0.9.5
+- Add updatedAt field.
+- Show last update date in table.
+- Add ShortcodesUsage table and entity.
+- Keep track of shortcode usage depending on setting (disabled by default).
+- Short number of pages the shortcode was found on.
+- Add help icons to shortcodes table.
+- Delete usage if a page is deleted.
+- Allow usage to be cleared per shortcode.
+
+0.9.4
+- Make event hook code change when shortcode changes.
+- Add pkg description.
+- Code cleanup (unused imports, etc).
+
+0.9.3
+- Add red alert box in case a PHP snippet is changed.
+
+0.9.2
+- Improve eval in try / catch.
+
+0.9.1
+- Make sure an error is thrown / catched if a shortcode already exists.
+- Fix 'Each PHP file contains exec or die statements' linter error.
+
+0.9.0
+- Initial PRB submission.
