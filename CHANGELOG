@@ -1,3 +1,6 @@
+1.0.0
+- Approved by PRB.
+
 0.9.8
 - Get rid of 'shortcodes.enable_php_snippets' setting.
 - Only let the Super User add or edit PHP snippets.
