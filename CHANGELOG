@@ -1,3 +1,6 @@
+1.0.1
+- Fix Logger class BC break in 8.4.4+.
+
 1.0.0
 - Approved by PRB.
 

@@ -5,7 +5,7 @@ namespace A3020\Shortcodes\Shortcode;
 use A3020\Shortcodes\Entity\Shortcode;
 use A3020\Shortcodes\Event\Resolve;
 use Concrete\Core\Config\Repository\Repository;
-use Concrete\Core\Logging\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Throwable;
 
@@ -17,7 +17,7 @@ class Resolver
     private $eventDispatcher;
 
     /**
-     * @var Logger
+     * @var \Psr\Log\LoggerInterface
      */
     private $logger;
 
@@ -26,7 +26,7 @@ class Resolver
      */
     private $config;
 
-    public function __construct(EventDispatcher $eventDispatcher, Logger $logger, Repository $config)
+    public function __construct(EventDispatcher $eventDispatcher, LoggerInterface $logger, Repository $config)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger;
@@ -83,7 +83,7 @@ class Resolver
         try {
             eval($php);
         } catch (Throwable $e) {
-            $this->logger->addDebug(
+            $this->logger->debug(
                 t('PHP shortcode error: %s.', $e->getMessage())
             );
         }
