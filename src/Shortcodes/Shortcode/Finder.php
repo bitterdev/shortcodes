@@ -7,7 +7,8 @@ class Finder
     /**
      * Finds all shortcodes on a page
      *
-     * Example shortcode: [[year]]
+     * @example INPUT:'Copyright [[year]] by [[company]].'
+     * @example OUTPUT: ['year', 'company']
      *
      * @param string $html
      *
@@ -15,7 +16,7 @@ class Finder
      */
     public function find($html)
     {
-        preg_match_all('/\[\[(.*)\]\]/', $html, $matches);
+        preg_match_all('/\[\[(.*?)\]\]/', $html, $matches);
 
         return $matches[1];
     }
