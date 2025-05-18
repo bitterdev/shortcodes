@@ -2,72 +2,72 @@
 
 namespace Concrete\Package\Shortcodes\Controller\SinglePage\Dashboard\Shortcodes;
 
-use A3020\Shortcodes\Entity\Shortcode;
-use A3020\Shortcodes\Shortcode\ShortcodeRepository;
-use A3020\Shortcodes\Usage\UsageRepository;
-use Concrete\Core\Asset\AssetList;
+use Bitter\Shortcodes\Entity\Shortcode;
+use Bitter\Shortcodes\Shortcode\ShortcodeRepository;
+use Bitter\Shortcodes\Usage\UsageRepository;
 use Concrete\Core\Config\Repository\Repository;
 use Concrete\Core\Error\UserMessageException;
+use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Page\Controller\DashboardPageController;
 use Concrete\Core\Page\Page;
-use Concrete\Core\Routing\Redirect;
 use Concrete\Core\User\User;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
 use Exception;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use JetBrains\PhpStorm\ArrayShape;
+use Symfony\Component\HttpFoundation\Response;
 
 final class Search extends DashboardPageController
 {
-    public function on_before_render()
-    {
-        parent::on_before_render();
-
-        $al = AssetList::getInstance();
-
-        $al->register('javascript', 'shortcodes/datatables', 'js/datatables.min.js', [], 'shortcodes');
-        $this->requireAsset('javascript', 'shortcodes/datatables');
-
-        $al->register('css', 'shortcodes/datatables', 'css/datatables.css', [], 'shortcodes');
-        $this->requireAsset('css', 'shortcodes/datatables');
-    }
-
     public function view()
     {
         /** @var Repository $config */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $config = $this->app->make(Repository::class);
-
-        $this->set('trackUsage', (bool) $config->get('shortcodes.track_usage', false));
+        $this->set('trackUsage', (bool)$config->get('shortcodes.track_usage', false));
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->set('shortcodes', $this->getShortcodes());
     }
-    
-    public function add()
+
+    public function add(): ?Response
     {
         $this->set('pageTitle', t('Add shortcode'));
         $this->set('shortcode', new Shortcode());
+        $this->set('resolveStrategyOptions', $this->getResolveStrategyOptions());
+        $this->render('/dashboard/shortcodes/search/edit');
 
-        $this->addEdit();
+        return null;
     }
 
-    public function edit($id = 0)
+    public function edit($id = 0): ?Response
     {
         $this->set('pageTitle', t('Edit shortcode'));
-
         /** @var ShortcodeRepository $repository */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $repository = $this->app->make(ShortcodeRepository::class);
-        $this->set('shortcode', $repository->findOrFail($id));
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $this->set('shortcode', $repository->findOrFail((int)$id));
+        $this->set('resolveStrategyOptions', $this->getResolveStrategyOptions());
+        $this->render('/dashboard/shortcodes/search/edit');
 
-        $this->addEdit();
+        return null;
     }
 
     public function usage($id = 0)
     {
         /** @var ShortcodeRepository $repository */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $repository = $this->app->make(ShortcodeRepository::class);
-        $shortcode = $repository->findOrFail($id);
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $shortcode = $repository->findOrFail((int)$id);
 
         /** @var UsageRepository $repository */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $repository = $this->app->make(UsageRepository::class);
 
         $pages = [];
+
         foreach ($repository->findByShortcode($shortcode) as $usage) {
             $page = Page::getByID($usage->getPageId());
             if (!is_object($page) || $page->isError()) {
@@ -86,33 +86,42 @@ final class Search extends DashboardPageController
         $this->set('shortcode', $shortcode);
         $this->set('pages', $pages);
 
-        $this->render('/dashboard/shortcodes/usage');
+        $this->render('/dashboard/shortcodes/search/usage');
     }
 
-    public function clearUsage($id = null)
+    /** @noinspection PhpUnused */
+    public function clear_usage($id = null): Response
     {
+        /** @var ResponseFactoryInterface $responseFactory */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $responseFactory = $this->app->make(ResponseFactoryInterface::class);
         /** @var ShortcodeRepository $repository */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $repository = $this->app->make(ShortcodeRepository::class);
-        $shortcode = $repository->findOrFail($id);
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $shortcode = $repository->findOrFail((int)$id);
 
         /** @var UsageRepository $repository */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $repository = $this->app->make(UsageRepository::class);
         $repository->deleteByShortcode($shortcode);
 
         $this->flash('success', t('Usage for the shortcode has been cleared.'));
 
-        return Redirect::to('/dashboard/shortcodes/search');
+        return $responseFactory->redirect('/dashboard/shortcodes/search', Response::HTTP_TEMPORARY_REDIRECT);
     }
 
-    protected function addEdit()
+    /**
+     * @throws UserMessageException
+     * @throws BindingResolutionException
+     */
+    public function save(): ?Response
     {
-        $this->render('/dashboard/shortcodes/add_edit');
-        $this->set('resolveStrategyOptions', $this->getResolveStrategyOptions());
-    }
+        /** @var ResponseFactoryInterface $responseFactory */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $responseFactory = $this->app->make(ResponseFactoryInterface::class);
 
-    public function save()
-    {
-        if (!$this->token->validate('a3020.shortcodes.add_edit')) {
+        if (!$this->token->validate('save_shortcut')) {
             throw new UserMessageException($this->token->getErrorMessage());
         }
 
@@ -125,7 +134,7 @@ final class Search extends DashboardPageController
             $shortcode = new Shortcode();
         }
 
-        $shortcode->setIsActive((bool) $this->post('isActive'));
+        $shortcode->setIsActive((bool)$this->post('isActive'));
         $shortcode->setShortcode($this->sanitizeShortcodeInput($this->post('shortcode')));
         $shortcode->setValue($this->getValueFromPost());
 
@@ -141,9 +150,8 @@ final class Search extends DashboardPageController
 
         try {
             $repository->store($shortcode);
-        } catch (UniqueConstraintViolationException $e) {
+        } catch (ORMException|OptimisticLockException) {
             $this->flash('error', t('This shortcode already exists! The shortcode needs to be unique.'));
-
             return $this->post('id') ? $this->edit() : $this->add();
         } catch (Exception $e) {
             $this->flash('error', t('Something went wrong: %s', $e->getMessage()));
@@ -157,38 +165,48 @@ final class Search extends DashboardPageController
             $this->flash('success', t('Shortcode has been added successfully.'));
         }
 
-        return Redirect::to('/dashboard/shortcodes/search');
+        return $responseFactory->redirect('/dashboard/shortcodes/search', Response::HTTP_TEMPORARY_REDIRECT);
     }
 
-    public function delete($id = null)
+    public function delete($id = null): Response
     {
         /** @var ShortcodeRepository $repository */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $repository = $this->app->make(ShortcodeRepository::class);
+        /** @var ResponseFactoryInterface $responseFactory */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $responseFactory = $this->app->make(ResponseFactoryInterface::class);
+        /** @noinspection PhpUnhandledExceptionInspection */
         $shortcode = $repository->findOrFail($id);
-
+        /** @noinspection PhpUnhandledExceptionInspection */
         $repository->delete($shortcode);
 
         $this->flash('success', t('Shortcode has been deleted successfully.'));
 
-        return Redirect::to('/dashboard/shortcodes/search');
+        return $responseFactory->redirect('/dashboard/shortcodes/search', Response::HTTP_TEMPORARY_REDIRECT);
     }
-    
+
     /**
-     * @return array
+     * @return Shortcode[]|array
+     * @throws BindingResolutionException
      */
-    private function getShortcodes()
+    private function getShortcodes(): array
     {
         /** @var ShortcodeRepository $repository */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $repository = $this->app->make(ShortcodeRepository::class);
 
         /** @var Repository $config */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $config = $this->app->make(Repository::class);
 
         $user = new User();
 
         $shortcodes = [];
+
         foreach ($repository->all() as $shortcode) {
             $canEdit = true;
+
             if ($shortcode->getResolveStrategy() === Shortcode::RESOLVE_BY_PHP && !$user->isSuperUser()) {
                 $canEdit = false;
             }
@@ -200,11 +218,10 @@ final class Search extends DashboardPageController
                 'strategy' => $shortcode->getResolveStrategy(),
                 'value' => $shortcode->getDisplayValue(),
                 'is_active' => $shortcode->isActive(),
-                'updated_at' => $shortcode->getUpdatedAt()
-                    ->format('Y-m-d H:i:s'),
+                'updated_at' => $shortcode->getUpdatedAt()->format('Y-m-d H:i:s')
             ];
 
-            if ((bool) $config->get('shortcodes.track_usage', false) === true) {
+            if ((bool)$config->get('shortcodes.track_usage', false) === true) {
                 $data['usage'] = $this->getUsageFor($shortcode);
             }
 
@@ -217,7 +234,7 @@ final class Search extends DashboardPageController
     /**
      * @return array
      */
-    private function getResolveStrategyOptions()
+    #[ArrayShape([Shortcode::RESOLVE_BY_STRING => "string", Shortcode::RESOLVE_BY_EVENT => "string", Shortcode::RESOLVE_BY_PHP => "string"])] protected function getResolveStrategyOptions(): array
     {
         $options = [
             Shortcode::RESOLVE_BY_STRING => t('Text value'),
@@ -226,9 +243,10 @@ final class Search extends DashboardPageController
 
         // The PHP snippet strategy is only available for super admins
         $user = new User();
+
         if ($user->isSuperUser()) {
             $options[Shortcode::RESOLVE_BY_PHP] = t('The outcome of a PHP snippet');
-        };
+        }
 
         return $options;
     }
@@ -240,21 +258,13 @@ final class Search extends DashboardPageController
      *
      * @return string
      */
-    private function sanitizeShortcodeInput($shortcode)
+    protected function sanitizeShortcodeInput(string $shortcode): string
     {
-        $shortcode = strtolower(trim($shortcode));
-        $shortcode = str_replace(' ', '_', $shortcode);
-        $shortcode = str_replace([
-            '[',
-            ']',
-        ], '', $shortcode);
-
-        return $shortcode;
+        return str_replace(['[', ']',], '', str_replace(' ', '_', strtolower(trim($shortcode))));
     }
 
-    private function getValueFromPost()
+    private function getValueFromPost(): ?string
     {
-        // Shortcodes that are resolved via an event, don't have a value
         if ($this->post('resolveStrategy') === Shortcode::RESOLVE_BY_EVENT) {
             return null;
         }
@@ -266,11 +276,11 @@ final class Search extends DashboardPageController
         return $this->post('stringValue');
     }
 
-    private function getUsageFor(Shortcode $shortcode)
+    protected function getUsageFor(Shortcode $shortcode): int
     {
         /** @var UsageRepository $repository */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $repository = $this->app->make(UsageRepository::class);
-
         return $repository->getTotalFor($shortcode);
     }
 }

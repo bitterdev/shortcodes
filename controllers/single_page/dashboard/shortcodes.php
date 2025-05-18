@@ -3,12 +3,13 @@
 namespace Concrete\Package\Shortcodes\Controller\SinglePage\Dashboard;
 
 use Concrete\Core\Page\Controller\DashboardPageController;
-use Concrete\Core\Routing\Redirect;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 final class Shortcodes extends DashboardPageController
 {
-    public function view()
+    public function view(): RedirectResponse|Response
     {
-        return Redirect::to('/dashboard/shortcodes/search');
+        return $this->buildRedirectToFirstAccessibleChildPage();
     }
 }

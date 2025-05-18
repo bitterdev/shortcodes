@@ -1,0 +1,22 @@
+{
+  "name": "shortcodes",
+  "version": "1.0.0",
+  "author": "Fabian Bitter",
+  "description": "Replaces shortcodes with text replacements.",
+  "homepage": "https://www.bitter.de",
+  "devDependencies": {
+    "abbrev": "^3.0.1",
+    "bower": "^1.8.14",
+    "getcomposer": "^1.3.3",
+    "grunt": "~1.6.1",
+    "grunt-cli": "^1.5.0",
+    "grunt-contrib-clean": "^2.0.1",
+    "grunt-contrib-compress": "^2.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-exec": "^3.0.0",
+    "grunt-version": "^3.0.1",
+    "shared-git-hooks": "^1.2.1",
+    "shelljs": ">=0.8.5",
+    "showdown": "^2.1.0"
+  }
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<concrete5-cif version="1.0">
+    <singlepages>
+        <page name="Shortcodes" path="/dashboard/shortcodes"
+              filename="/dashboard/shortcodes.php"
+              pagetype="" description=""
+              package="shortcodes">
+        </page>
+
+        <page name="Search" path="/dashboard/shortcodes/search"
+              filename="/dashboard/shortcodes/search.php" pagetype="" description=""
+              package="shortcodes">
+        </page>
+
+        <page name="Settings" path="/dashboard/shortcodes/settings"
+              filename="/dashboard/shortcodes/settings.php" pagetype="" description=""
+              package="shortcodes">
+        </page>
+    </singlepages>
+</concrete5-cif>

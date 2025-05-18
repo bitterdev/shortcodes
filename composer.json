@@ -1,0 +1,10 @@
+{
+  "name": "bitter/shortcodes",
+  "type": "concrete5-package",
+  "description": "Replaces shortcodes with text replacements.",
+  "autoload": {
+    "psr-4": {
+      "Bitter\\Shortcodes\\": "src/Bitter/Shortcodes"
+    }
+  }
+}

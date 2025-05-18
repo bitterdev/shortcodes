@@ -2,63 +2,63 @@
 
 namespace Concrete\Package\Shortcodes;
 
-use A3020\Shortcodes\Installer\Installer;
-use A3020\Shortcodes\ShortcodesServiceProvider;
+use Bitter\Shortcodes\Provider\ServiceProvider;
 use Concrete\Core\Database\Connection\Connection;
 use Concrete\Core\Package\Package;
-use Concrete\Core\Support\Facade\Package as PackageFacade;
 
 final class Controller extends Package
 {
-    protected $pkgHandle = 'shortcodes';
-    protected $appVersionRequired = '8.0.0';
-    protected $pkgVersion = '1.0.2';
+    protected string $pkgHandle = 'shortcodes';
+    protected $appVersionRequired = '9.0.0';
+    protected string $pkgVersion = '1.1.0';
     protected $pkgAutoloaderRegistries = [
-        'src/Shortcodes' => '\A3020\Shortcodes',
+        'src/Bitter/Shortcodes' => '\Bitter\Shortcodes',
     ];
 
-    public function getPackageName()
+    public function getPackageName(): string
     {
         return t('Shortcodes');
     }
 
-    public function getPackageDescription()
+    public function getPackageDescription(): string
     {
         return t('Replaces shortcodes with text replacements.');
     }
 
     public function on_start()
     {
-        $provider = $this->app->make(ShortcodesServiceProvider::class);
+        /** @var ServiceProvider $provider */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $provider = $this->app->make(ServiceProvider::class);
         $provider->register();
     }
 
     public function install()
     {
-        $pkg = parent::install();
-
-        $installer = $this->app->make(Installer::class);
-        $installer->install($pkg);
+        parent::install();
+        $this->installContentFile("data.xml");
     }
 
     public function upgrade()
     {
         parent::upgrade();
-
-        /** @see \Concrete\Core\Package\PackageService */
-        $pkg = PackageFacade::getByHandle($this->pkgHandle);
-
-        /** @var Installer $installer */
-        $installer = $this->app->make(Installer::class);
-        $installer->install($pkg);
+        $this->installContentFile("data.xml");
     }
 
     public function uninstall()
     {
         parent::uninstall();
 
+        /** @var Connection $db */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $db = $this->app->make(Connection::class);
+        /** @noinspection PhpUnhandledExceptionInspection */
+        /** @noinspection SqlDialectInspection */
+        /** @noinspection SqlNoDataSourceInspection */
         $db->executeQuery('DROP TABLE IF EXISTS ShortcodesUsage');
+        /** @noinspection PhpUnhandledExceptionInspection */
+        /** @noinspection SqlDialectInspection */
+        /** @noinspection SqlNoDataSourceInspection */
         $db->executeQuery('DROP TABLE IF EXISTS ShortcodesEntries');
     }
 }

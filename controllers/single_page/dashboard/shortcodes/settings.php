@@ -3,35 +3,53 @@
 namespace Concrete\Package\Shortcodes\Controller\SinglePage\Dashboard\Shortcodes;
 
 use Concrete\Core\Config\Repository\Repository;
+use Concrete\Core\Http\Request;
+use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Page\Controller\DashboardPageController;
-use Concrete\Core\Routing\Redirect;
+use Symfony\Component\HttpFoundation\Response;
 
 final class Settings extends DashboardPageController
 {
-    public function view()
+    public function updated()
     {
-        /** @var Repository $config */
-        $config = $this->app->make(Repository::class);
-
-        $this->set('isEnabled', (bool) $config->get('shortcodes.enabled', true));
-        $this->set('trackUsage', (bool) $config->get('shortcodes.track_usage', false));
+        $this->setDefaults();
+        $this->flash('success', t('Your settings have been saved.'));
     }
 
-    public function save()
+    private function setDefaults()
     {
-        if (!$this->token->validate('a3020.shortcodes.settings')) {
-            $this->flash('error', $this->token->getErrorMessage());
+        /** @var Repository $config */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $config = $this->app->make(Repository::class);
+        $this->set('isEnabled', (bool)$config->get('shortcodes.enabled', true));
+        $this->set('trackUsage', (bool)$config->get('shortcodes.track_usage', false));
+    }
 
-            return Redirect::to('/dashboard/shortcodes/settings');
+    public function view(): ?Response
+    {
+        /** @var Repository $config */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $config = $this->app->make(Repository::class);
+        /** @noinspection PhpUnhandledExceptionInspection */
+        /** @var ResponseFactoryInterface $responseFactory */
+        $responseFactory = $this->app->make(ResponseFactoryInterface::class);
+        /** @noinspection PhpUnhandledExceptionInspection */
+        /** @var Request $request */
+        $request = $this->app->make(Request::class);
+
+        if ($request->getMethod() === "POST") {
+            if (!$this->token->validate('update_settings')) {
+                $this->flash('error', $this->token->getErrorMessage());
+            } else {
+                $config->save('shortcodes.enabled', (bool)$this->post('isEnabled'));
+                $config->save('shortcodes.track_usage', (bool)$this->post('trackUsage'));
+
+                return $responseFactory->redirect('/dashboard/shortcodes/settings/updated', Response::HTTP_TEMPORARY_REDIRECT);
+            }
         }
 
-        /** @var Repository $config */
-        $config = $this->app->make(Repository::class);
-        $config->save('shortcodes.enabled', (bool) $this->post('isEnabled'));
-        $config->save('shortcodes.track_usage', (bool) $this->post('trackUsage'));
+        $this->setDefaults();
 
-        $this->flash('success', t('Your settings have been saved.'));
-
-        return Redirect::to('/dashboard/shortcodes/settings');
+        return null;
     }
 }
