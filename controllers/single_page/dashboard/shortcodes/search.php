@@ -10,6 +10,7 @@ use Concrete\Core\Error\UserMessageException;
 use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Page\Controller\DashboardPageController;
 use Concrete\Core\Page\Page;
+use Concrete\Core\Support\Facade\Url;
 use Concrete\Core\User\User;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
@@ -108,7 +109,7 @@ final class Search extends DashboardPageController
 
         $this->flash('success', t('Usage for the shortcode has been cleared.'));
 
-        return $responseFactory->redirect('/dashboard/shortcodes/search', Response::HTTP_TEMPORARY_REDIRECT);
+        return $responseFactory->redirect(Url::to('/dashboard/shortcodes/search'), Response::HTTP_TEMPORARY_REDIRECT);
     }
 
     /**
@@ -165,7 +166,7 @@ final class Search extends DashboardPageController
             $this->flash('success', t('Shortcode has been added successfully.'));
         }
 
-        return $responseFactory->redirect('/dashboard/shortcodes/search', Response::HTTP_TEMPORARY_REDIRECT);
+        return $responseFactory->redirect(Url::to('/dashboard/shortcodes/search'), Response::HTTP_TEMPORARY_REDIRECT);
     }
 
     public function delete($id = null): Response
@@ -183,7 +184,7 @@ final class Search extends DashboardPageController
 
         $this->flash('success', t('Shortcode has been deleted successfully.'));
 
-        return $responseFactory->redirect('/dashboard/shortcodes/search', Response::HTTP_TEMPORARY_REDIRECT);
+        return $responseFactory->redirect(Url::to('/dashboard/shortcodes/search'), Response::HTTP_TEMPORARY_REDIRECT);
     }
 
     /**
