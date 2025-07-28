@@ -10,7 +10,7 @@ final class Controller extends Package
 {
     protected string $pkgHandle = 'shortcodes';
     protected $appVersionRequired = '9.0.0';
-    protected string $pkgVersion = '1.1.0';
+    protected string $pkgVersion = '1.1.1';
     protected $pkgAutoloaderRegistries = [
         'src/Bitter/Shortcodes' => '\Bitter\Shortcodes',
     ];
